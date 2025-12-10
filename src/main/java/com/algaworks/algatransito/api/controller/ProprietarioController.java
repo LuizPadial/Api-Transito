@@ -1,26 +1,70 @@
 package com.algaworks.algatransito.api.controller;
 
+import com.algaworks.algatransito.domain.exception.DomainException;
 import com.algaworks.algatransito.domain.model.Proprietario;
 import com.algaworks.algatransito.domain.repository.ProprietarioRepository;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.TypedQuery;
+import com.algaworks.algatransito.domain.service.ProprietarioService;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
+import java.util.Optional;
 
 @AllArgsConstructor
 @RestController
+@RequestMapping("/proprietarios")
 public class ProprietarioController {
 
+    private final ProprietarioService proprietarioService;
     private final ProprietarioRepository proprietarioRepository;
 
-    @GetMapping("/proprietarios")
+    @GetMapping
     public List<Proprietario> listar(){
         return proprietarioRepository.findAll();
     }
 
+    @GetMapping("/{proprietarioId}")
+    public ResponseEntity<Proprietario> buscar(@PathVariable Long proprietarioId) {
+       return proprietarioRepository.findById(proprietarioId)
+               .map(ResponseEntity::ok)
+               .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public Proprietario adicionar(@Valid @RequestBody Proprietario proprietario) {
+        return proprietarioService.salvar(proprietario);
+    }
+
+    @PutMapping("{proprietarioId}")
+    public ResponseEntity<Proprietario> atualizar(@PathVariable Long proprietarioId,
+                                                  @RequestBody Proprietario proprietario){
+        if (!proprietarioRepository.existsById(proprietarioId)){
+            return ResponseEntity.notFound().build();
+        }
+        proprietario.setId(proprietarioId);
+        Proprietario prorietarioAtualizado = proprietarioService.salvar(proprietario);
+
+        return ResponseEntity.ok(prorietarioAtualizado);
+    }
+
+    @DeleteMapping("{proprietarioId}")
+    public ResponseEntity<Void> remover(@PathVariable Long proprietarioId){
+
+        if (!proprietarioRepository.existsById(proprietarioId)){
+            return ResponseEntity.notFound().build();
+        }
+
+        proprietarioService.excluir(proprietarioId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @ExceptionHandler(DomainException.class)
+    public ResponseEntity<String> capturar(DomainException e){
+        return ResponseEntity.badRequest().body(e.getMessage());
+    }
 
 }
