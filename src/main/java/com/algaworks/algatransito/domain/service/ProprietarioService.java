@@ -3,16 +3,19 @@ import com.algaworks.algatransito.domain.exception.DomainException;
 import com.algaworks.algatransito.domain.model.Proprietario;
 import com.algaworks.algatransito.domain.repository.ProprietarioRepository;
 import lombok.AllArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 
 @Service
 @AllArgsConstructor
 public class ProprietarioService {
 
     private final ProprietarioRepository proprietarioRepository;
+
+    public Proprietario buscar(Long proprietarioId) {
+        return proprietarioRepository.findById(proprietarioId)
+                .orElseThrow(() -> new DomainException("Propietário não encontrado"));
+    }
 
     @Transactional
     public Proprietario salvar(Proprietario proprietario){

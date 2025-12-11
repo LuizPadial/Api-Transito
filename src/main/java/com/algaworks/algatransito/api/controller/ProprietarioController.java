@@ -11,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @AllArgsConstructor
 @RestController
@@ -61,10 +60,4 @@ public class ProprietarioController {
         proprietarioService.excluir(proprietarioId);
         return ResponseEntity.noContent().build();
     }
-
-    @ExceptionHandler(DomainException.class)
-    public ResponseEntity<String> capturar(DomainException e){
-        return ResponseEntity.badRequest().body(e.getMessage());
-    }
-
 }
