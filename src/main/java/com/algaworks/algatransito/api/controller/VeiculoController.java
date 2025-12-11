@@ -1,6 +1,8 @@
 package com.algaworks.algatransito.api.controller;
 
-import com.algaworks.algatransito.domain.exception.DomainException;
+import com.algaworks.algatransito.api.assembler.VeiculoAssembler;
+import com.algaworks.algatransito.api.model.VeiculoModel;
+import com.algaworks.algatransito.api.model.input.VeiculoInput;
 import com.algaworks.algatransito.domain.model.Veiculo;
 import com.algaworks.algatransito.domain.repository.VeiculoRepository;
 import com.algaworks.algatransito.domain.service.VeiculoService;
@@ -19,21 +21,26 @@ public class VeiculoController {
 
     private final VeiculoRepository veiculoRepository;
     private final VeiculoService veiculoService;
+    private final VeiculoAssembler veiculoAssembler;
 
-    public List<Veiculo> listar(){
-        return veiculoRepository.findAll();
+    @GetMapping
+    public List<VeiculoModel> listar(){
+        return veiculoAssembler.toCollectionModel(veiculoRepository.findAll());
     }
 
-    @GetMapping("/veiculoId")
-    public ResponseEntity<Veiculo> buscar(@Valid @PathVariable Long veiculoId) {
+    @GetMapping("/{veiculoId}")
+    public ResponseEntity<VeiculoModel> buscar(@PathVariable Long veiculoId) {
         return veiculoRepository.findById(veiculoId)
+                .map(veiculoAssembler::toModel)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Veiculo cadastrar(@RequestBody Veiculo veiculo) {
-        return veiculoService.cadastrar(veiculo);
+    public VeiculoModel cadastrar(@Valid @RequestBody VeiculoInput veiculoInput) {
+        Veiculo novoVeiculo = veiculoAssembler.toEntity(veiculoInput);
+        Veiculo veiculoCadastrado = veiculoService.cadastrar(novoVeiculo);
+        return veiculoAssembler.toModel(veiculoCadastrado);
     }
 }
