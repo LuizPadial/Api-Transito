@@ -5,7 +5,10 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.sql.Array;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -30,6 +33,9 @@ public class Veiculo {
 
     private LocalDateTime dataCadastro;
     private LocalDateTime dataApreensao;
+
+    @OneToMany(mappedBy = "veiculo")
+    private List<Autuacao> autuacoes = new ArrayList<>();
 
 }
 
